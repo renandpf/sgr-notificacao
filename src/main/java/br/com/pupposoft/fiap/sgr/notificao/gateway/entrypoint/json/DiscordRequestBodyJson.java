@@ -12,10 +12,7 @@ public class DiscordRequestBodyJson {
 	private List<EmbedsJson> embeds;
 
 	public DiscordRequestBodyJson(MessageJson messageJson) {
-		
-		String color = messageJson.getNewStateValue().equals("ALARM") ? "16711680" : "65280";
-		
-		embeds = Arrays.asList(new EmbedsJson(messageJson.getNewStateValue() + " - " + messageJson.getAlarmName(), color, messageJson.getMessage()));
+		embeds = Arrays.asList(new EmbedsJson(messageJson.getAssunto(), "65280", messageJson.getConteudo()));
 	}
 	
 	@Getter

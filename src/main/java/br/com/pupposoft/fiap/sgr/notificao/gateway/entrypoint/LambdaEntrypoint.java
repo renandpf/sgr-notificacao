@@ -1,15 +1,11 @@
 package br.com.pupposoft.fiap.sgr.notificao.gateway.entrypoint;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.pupposoft.fiap.sgr.notificao.gateway.entrypoint.json.DiscordRequestBodyJson;
@@ -38,14 +34,13 @@ public class LambdaEntrypoint implements RequestHandler<Object, ResponseJson> {
 			System.out.println("input=" + input);
 			System.out.println("context=" + context);
 			
-			String messageJsonStr = getMessage(input + "");
-			System.out.println("messageJson=" + messageJsonStr);
+			String messageJsonStr = input + "";
 			
 			MessageJson messageJson = objectMapper.readValue(messageJsonStr, MessageJson.class);
 			
 			sendToDiscord(messageJson);
 			
-			String response = messageJson.getMessage();
+			String response = "OK";
 			
 			Map<String, String> headers = new HashMap<>();
 			headers.put("Access-Control-Allow-Origin", "*");
@@ -60,24 +55,6 @@ public class LambdaEntrypoint implements RequestHandler<Object, ResponseJson> {
 			log.error(e.getMessage(), e);
 			return new ResponseJson(false, 500, new HashMap<>(), e.getMessage());//TODO testar
 		}
-	}
-	
-	private String getMessage(String input) throws JsonProcessingException {
-		List<String> inputs = Arrays.asList(input.split("="));
-		
-		List<String> messages = inputs.stream().filter(i -> i.contains("AlarmName") && i.contains("AlarmDescription")).toList();
-
-		if(messages.isEmpty()) {
-			MessageJson messageJson = MessageJson.builder()
-					.alarmName("Não Identificado")
-					.alarmDescription("Não foi possível identificar a causa do alarme. Favor checar os dashboards de monitoramento")
-					.newStateReason("Não Identificado")
-					.stateChangeTime(LocalDateTime.now().toString())
-					.build();
-			return objectMapper.writeValueAsString(messageJson);
-		}
-		
-		return messages.get(0);
 	}
 	
 	private void sendToDiscord(MessageJson messageJson) throws IOException {
